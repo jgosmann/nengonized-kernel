@@ -1,8 +1,10 @@
 import os
 
 import nengo
+import pytest
 
-from nengonized_kernel.model_loader import ModelLoader
+from nengonized_kernel.model_loader import (
+        ExecutionException, ModelLoader, NoModelException)
 from nengonized_kernel.testing import dummy_model
 
 
@@ -20,7 +22,15 @@ class TestModelLoader(object):
         os.chdir(expected)  # prevent side-effects on other tests
         assert actual == expected
 
+    def test_raises_ExecutionException_if_code_raises_exception(self):
+        code = "import"
+        with pytest.raises(ExecutionException) as excinfo:
+            ModelLoader().from_string(code)
+        assert isinstance(excinfo.value.__cause__, SyntaxError)
+
+    def test_raises_ModelNotFoundException_if_model_is_not_defined(self):
+        with pytest.raises(NoModelException):
+            ModelLoader().from_string("")
+
     # TODO
-    # error cases
     # __nengo_gui__ var/__file__
-    # no model
