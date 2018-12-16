@@ -4,18 +4,28 @@ import nengo
 from nengonized_kernel.gql.meta import GqlFieldsFromParams
 
 
-class GqlFieldsFromParamsTest(object):
-    def test_binds_param():
+class TestGqlFieldsFromParams(object):
+    def test_binds_param(self):
         class ParamClass(object):
-            param = IntParam(default=42)
+            param = nengo.params.IntParam('param', default=42, optional=True)
 
         class ObjType(GqlFieldsFromParams, backing_class=ParamClass):
             pass
 
         assert isinstance(ObjType.param, graphene.Int)
-        assert ObjType(ParamClass()).resolve_param == 42
+        assert ObjType(ParamClass()).resolve_param(None) == 42
 
-    def test_provides_list_of_unsupported_fields():
+    def test_binds_non_optional_param_as_non_null(self):
+        class ParamClass(object):
+            param = nengo.params.IntParam('param', default=42, optional=False)
+
+        class ObjType(GqlFieldsFromParams, backing_class=ParamClass):
+            pass
+
+        assert isinstance(ObjType.param, graphene.NonNull)
+        assert ObjType(ParamClass()).resolve_param(None) == 42
+
+    def test_provides_list_of_unsupported_fields(self):
         class UnsupportedParam(nengo.params.Parameter):
             pass
 
