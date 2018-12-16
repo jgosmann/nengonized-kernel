@@ -1,5 +1,3 @@
-import warnings
-
 import graphene as g
 import nengo
 import nengo.params as p
@@ -18,16 +16,17 @@ class GqlFieldsFromParams(g.ObjectType):
         self._obj = obj
 
     def __init_subclass__(cls, backing_class, **kwargs):
+        unsupported_params = []
+
         for param_name in iter_params(backing_class):
             param = getattr(backing_class, param_name)
             if (param.name not in vars(cls)
                     and type(param) in cls.paramTypeToGqlType):
                 cls.bind_param(param)
             else:
-                warnings.warn(
-                    f"Cannot bind param '{cls.__name__}.{param.name}' of type "
-                    f"'{type(param).__name__}' because corresponding Graphene "
-                    f"type is unknown.")
+                unsupported_params.append(param)
+
+        setattr(cls, 'unsupported_params', tuple(unsupported_params))
         super().__init_subclass__(**kwargs)
 
     @classmethod

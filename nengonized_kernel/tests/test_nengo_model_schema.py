@@ -2,7 +2,7 @@ from graphene.test import Client
 import nengo
 import pytest
 
-from nengonized_kernel.gql_schema import nengo_model_schema
+from nengonized_kernel.gql_schema import GqlFieldsFromParams, nengo_model_schema
 
 
 def assert_gql_data_equals(result, expected):
@@ -34,3 +34,16 @@ def test_can_query_objects_from_model(nengo_type):
             }]
         }
     })
+
+
+def test_GqlFieldsFromParams_provides_list_of_unsupported_fields():
+    class UnsupportedParam(nengo.params.Parameter):
+        pass
+
+    class ParamClass(object):
+        unsupported_param = UnsupportedParam('unsupported_param')
+
+    class ObjType(GqlFieldsFromParams, backing_class=ParamClass):
+        pass
+
+    assert ObjType.unsupported_params == (ParamClass.unsupported_param,)
