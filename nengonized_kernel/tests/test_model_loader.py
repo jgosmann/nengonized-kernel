@@ -32,5 +32,9 @@ class TestModelLoader(object):
         with pytest.raises(NoModelException):
             ModelLoader().from_string("")
 
-    # TODO
-    # __nengo_gui__ var/__file__
+    def test_sets_name(self):
+        model = ModelLoader('name').from_string("""
+import nengo
+model = nengo.Network(label=__name__)
+""")
+        assert model.label == 'name'
