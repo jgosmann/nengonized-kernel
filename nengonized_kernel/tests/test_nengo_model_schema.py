@@ -1,5 +1,6 @@
 from graphene.test import Client
 import nengo
+import pytest
 
 from nengonized_kernel.gql_schema import nengo_model_schema
 
@@ -9,35 +10,27 @@ def assert_gql_data_equals(result, expected):
     assert result.data == expected
 
 
-def test_can_query_ensembles_from_model():
+def create_nengo_obj_dummy(nengo_type, **kwargs):
+    typemap = {
+        nengo.Ensemble: lambda **kwargs: nengo.Ensemble(10, 1, **kwargs),
+        nengo.Node: lambda **kwargs: nengo.Node(0., **kwargs),
+    }
+    return typemap[nengo_type](**kwargs)
+
+
+@pytest.mark.parametrize('nengo_type', [nengo.Ensemble, nengo.Node])
+def test_can_query_objects_from_model(nengo_type):
     with nengo.Network() as model:
-        ens = nengo.Ensemble(10, 1, label="ens")
+        create_nengo_obj_dummy(nengo_type, label="label")
 
+    query_name = nengo_type.__name__.lower() + 's'
     result = nengo_model_schema.execute(
-        '{ model { ensembles { label } } }', context=model)
-
+        f'{{ model {{ {query_name} {{ label }} }} }}', context=model)
 
     assert_gql_data_equals(result, {
         'model': {
-            'ensembles': [{
-                'label': "ens"
-            }]
-        }
-    })
-
-
-def test_can_query_nodes_from_model():
-    with nengo.Network() as model:
-        node = nengo.Node(lambda t: t, label="node")
-
-    result = nengo_model_schema.execute(
-        '{ model { nodes { label } } }', context=model)
-
-
-    assert_gql_data_equals(result, {
-        'model': {
-            'nodes': [{
-                'label': "node"
+            query_name: [{
+                'label': "label"
             }]
         }
     })
