@@ -1,4 +1,4 @@
-from graphene import List, NonNull, ObjectType
+from graphene import List, NonNull, ObjectType, String
 import nengo
 
 from .meta import GqlFieldsFromParams
@@ -13,12 +13,16 @@ class Node(GqlFieldsFromParams, backing_class=nengo.Node):
 
 
 class Network(ObjectType):
+    label = String()
     ensembles = NonNull(List(NonNull(Ensemble)))
     nodes = NonNull(List(NonNull(Node)))
 
     def __init__(self, net):
         super()
         self._net = net
+
+    def resolve_label(self, info):
+        return self._net.label
 
     def resolve_ensembles(self, info):
         return [Ensemble(ens) for ens in self._net.ensembles]

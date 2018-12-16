@@ -1,6 +1,7 @@
-from graphene import Field, ObjectType, Schema
+from graphene import Field, Mutation, ObjectType, Schema, String
 
 from .nengo_model_schema import Network
+from ..model_loader import ModelLoader
 
 
 class Context(object):
@@ -15,4 +16,19 @@ class RootQuery(ObjectType):
         return Network(info.context.model)
 
 
-schema = Schema(query=RootQuery)
+class ReplaceModel(Mutation):
+    class Arguments:
+        code = String()
+
+    model = Field(Network)
+
+    def mutate(self, info, code):
+        info.context.model = ModelLoader().from_string(code)
+        return ReplaceModel(model=Network(info.context.model))
+
+
+class Mutations(ObjectType):
+    replaceModel = ReplaceModel.Field()
+
+
+schema = Schema(query=RootQuery, mutation=Mutations)
