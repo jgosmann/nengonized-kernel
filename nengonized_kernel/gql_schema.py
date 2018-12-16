@@ -16,8 +16,13 @@ class Ensemble(NengoObject):
     pass
 
 
+class Node(NengoObject):
+    pass
+
+
 class Network(ObjectType):
     ensembles = NonNull(List(NonNull(Ensemble)))
+    nodes = NonNull(List(NonNull(Node)))
 
     def __init__(self, net):
         super()
@@ -25,6 +30,9 @@ class Network(ObjectType):
 
     def resolve_ensembles(self, info):
         return [Ensemble(ens) for ens in self._net.ensembles]
+
+    def resolve_nodes(self, info):
+        return [Node(node) for node in self._net.nodes]
 
 
 class RootQuery(ObjectType):
