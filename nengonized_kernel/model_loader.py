@@ -11,11 +11,13 @@ def preserve_cwd():
         os.chdir(saved_cwd)
 
 
-class ExecutionException(Exception):
-    pass
+class ExecutionError(Exception):
+    def __init__(self, inner_exception):
+        super().__init__(str(inner_exception))
+        self.inner_exception = inner_exception
 
 
-class NoModelException(Exception):
+class ModelNotFoundError(Exception):
     pass
 
 
@@ -33,9 +35,9 @@ class ModelLoader(object):
             with preserve_cwd():
                 exec(code, locals_dict)
         except Exception as err:
-            raise ExecutionException from err
+            raise ExecutionError(err) from err
 
         try:
             return locals_dict['model']
         except KeyError:
-            raise NoModelException("No 'model' declared.")
+            raise ModelNotFoundError("No 'model' declared.")
