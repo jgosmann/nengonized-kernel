@@ -81,6 +81,8 @@ class RootQuery(ObjectType):
         return Network(info.context.model)
 
     def resolve_errors(self, info):
+        if info.context.errors is None:
+            return []
         return [Error.from_exception(err) for err in info.context.errors]
 
 

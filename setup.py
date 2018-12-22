@@ -28,9 +28,9 @@ setup(
     packages=find_packages(),
     provides=['nengonized_kernel'],
 
-    install_requires=['graphene', 'nengo'],
+    install_requires=['graphene', 'nengo', 'websockets'],
     extras_require={
-        'tests': ['pytest'],
+        'tests': ['pytest', 'pytest-asyncio'],
     },
 
     entry_points={
