@@ -20,9 +20,9 @@ class Handler(object):
 
 async def start_server(handler):
     async with websockets.serve(handler, 'localhost', 0) as server:
-        for socket in server.sockets:
-            sys.stdout.write(repr(socket.getsockname()) + '\n')
-        sys.stdout.write('OK\n')
+        addresses = [socket.getsockname() for socket in server.sockets]
+        json.dump({'graphql': addresses}, sys.stdout)
+        sys.stdout.write('\n\n')
         sys.stdout.flush()
         while True:
             await asyncio.sleep(1)

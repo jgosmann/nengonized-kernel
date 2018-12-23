@@ -24,21 +24,26 @@ class Kernel(object):
         self.proc = await asyncio.create_subprocess_exec(
                 sys.executable, '-m', 'nengonized_kernel', *self.args,
                 stdout=PIPE, stderr=PIPE)
-        line = await self.proc.stdout.readline()
-        sys.stdout.write(f'[kernel (stdout)] {line.decode()}')
+        conf = await self._read_json_conf(self.proc.stdout)
 
         asyncio.get_running_loop().create_task(
                 self._pipe(self.proc.stdout, sys.stdout, 'stdout'))
         asyncio.get_running_loop().create_task(
                 self._pipe(self.proc.stderr, sys.stderr, 'stderr'))
 
-        addr = eval(line)
+        addr = conf['graphql'][0]
         is_ipv6 = len(addr) > 2
         if is_ipv6:
             self.address = f'ws://[{addr[0]}]:{addr[1]}'
         else:
             self.address = f'ws://{addr[0]}:{addr[1]}'
         return self
+
+    async def _read_json_conf(self, stream):
+        lines = []
+        while len(lines) == 0 or lines[-1] != b'\n':
+            lines.append(await stream.readline())
+        return json.loads(b''.join(lines))
 
     async def _pipe(self, src, dest, name):
         async for line in src:
