@@ -11,6 +11,7 @@ class GqlFieldsFromParams(g.ObjectType):
     }
 
     def __init__(self, obj):
+        super().__init__()
         self._obj = obj
 
     def __init_subclass__(cls, backing_class, **kwargs):

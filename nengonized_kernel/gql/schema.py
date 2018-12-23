@@ -1,17 +1,19 @@
 import traceback
 
 from graphene import (
-        Field, List, Int, Mutation, NonNull, ObjectType, Schema, String)
+        Field, List, Int, Mutation, NonNull, ObjectType, relay, Schema, String)
 
-from .nengo_model_schema import Network
+from .nengo_model_schema import NengoNetwork
+from ..id_provider import IdProvider
 from ..model_loader import (
         ExecutionError, ModelLoader, ModelNotFoundError)
 
 
 class Context(object):
-    def __init__(self, model=None, errors=None):
+    def __init__(self, model=None, errors=None, id_provider=None):
         self.model = model
         self.errors = errors
+        self.id_provider = id_provider
 
 
 class FrameSummary(ObjectType):
@@ -74,11 +76,12 @@ class Error(ObjectType):
 
 
 class RootQuery(ObjectType):
-    model = Field(Network)
+    model = Field(NengoNetwork)
     errors = List(NonNull(Error))
+    node = relay.Node.Field()
 
     def resolve_model(self, info):
-        return Network(info.context.model)
+        return NengoNetwork(info.context.model)
 
     def resolve_errors(self, info):
         if info.context.errors is None:
