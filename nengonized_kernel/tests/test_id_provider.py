@@ -60,3 +60,12 @@ def test_provides_id_from_standard_lists():
     assert id_provider[ens] == 'no:Ensemble:model.ensembles[0]'
     assert id_provider[node] == 'no:Node:model.nodes[0]'
     assert id_provider[net] == 'no:Network:model.networks[0]'
+
+
+def test_provides_reverse_mapping():
+    with nengo.Network() as model:
+        ens = nengo.Ensemble(10, 1)
+
+    id_provider = IdProvider(model, {'model': model}, prefix='no')
+
+    assert id_provider.reverse_lookup(id_provider[ens]) is ens

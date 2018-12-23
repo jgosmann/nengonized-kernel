@@ -14,6 +14,7 @@ class IdProvider(object):
         self.prefix = prefix
         self._unique_name_map = weakref.WeakKeyDictionary()
         self._type_map = weakref.WeakKeyDictionary()
+        self._reverse_map = weakref.WeakValueDictionary()
         if locals_dict:
             self._scan_locals(locals_dict)
         self._scan_networks(model)
@@ -57,6 +58,8 @@ class IdProvider(object):
             if base in self.valid_types:
                 self._unique_name_map[obj] = unique_name
                 self._type_map[obj] = self.valid_types[base]
+                id_key = self._get_id(self.valid_types[base], unique_name)
+                self._reverse_map[id_key] = obj
                 return
 
     def _get_id(self, type_name, unique_name):
@@ -67,3 +70,6 @@ class IdProvider(object):
 
     def __getitem__(self, key):
         return self._get_id(self._type_map[key], self._unique_name_map[key])
+
+    def reverse_lookup(self, id_key):
+        return self._reverse_map[id_key]
