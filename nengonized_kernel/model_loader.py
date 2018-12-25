@@ -38,6 +38,6 @@ class ModelLoader(object):
             raise ExecutionError(err) from err
 
         try:
-            return locals_dict['model']
+            return locals_dict['model'], locals_dict
         except KeyError:
             raise ModelNotFoundError("No 'model' declared.")

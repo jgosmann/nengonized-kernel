@@ -4,6 +4,7 @@ import sys
 import websockets
 
 from nengonized_kernel.gql.schema import Context, schema
+from nengonized_kernel.id_provider import IdProvider
 from nengonized_kernel.model_loader import ExecutionError, ModelLoader
 
 
@@ -33,10 +34,12 @@ with open(sys.argv[1], 'r') as f:
     model = None
     errors = None
     try:
-        model = ModelLoader().from_string(f.read())
+        model, locals_dict = ModelLoader().from_string(f.read())
     except ExecutionError as err:
         errors = [err]
-    context = Context(model=model, errors=errors)
+    context = Context(
+            model=model, errors=errors,
+            id_provider=IdProvider(model, locals_dict))
     handler = Handler(context)
 
     asyncio.get_event_loop().run_until_complete(start_server(handler))
