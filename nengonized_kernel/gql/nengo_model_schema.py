@@ -35,6 +35,7 @@ class NengoNetwork(ObjectType, IdProviderNode, interfaces=[relay.Node]):
     label = String()
     ensembles = NonNull(List(NonNull(NengoEnsemble)))
     nodes = NonNull(List(NonNull(NengoNode)))
+    networks = NonNull(List(NonNull(lambda: NengoNetwork)))
 
     def __init__(self, net):
         super().__init__()
@@ -55,3 +56,6 @@ class NengoNetwork(ObjectType, IdProviderNode, interfaces=[relay.Node]):
 
     def resolve_nodes(self, info):
         return [NengoNode(node) for node in self._net.nodes]
+
+    def resolve_networks(self, info):
+        return [NengoNetwork(net) for net in self._net.networks]

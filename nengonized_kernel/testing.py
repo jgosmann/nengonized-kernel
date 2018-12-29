@@ -13,6 +13,7 @@ with nengo.Network(label='dummy') as model:
 dummy_templates = {
     nengo.Ensemble: lambda **kwargs: nengo.Ensemble(10, 1, **kwargs),
     nengo.Node: lambda **kwargs: nengo.Node(0., **kwargs),
+    nengo.Network: lambda **kwargs: nengo.Network(**kwargs),
 }
 
 

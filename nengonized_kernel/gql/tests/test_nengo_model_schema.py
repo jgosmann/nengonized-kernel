@@ -9,7 +9,11 @@ from nengonized_kernel.id_provider import IdProvider
 from nengonized_kernel.testing import create_dummy
 
 
-@pytest.mark.parametrize('nengo_type', [nengo.Ensemble, nengo.Node])
+@pytest.mark.parametrize('nengo_type', [
+    nengo.Ensemble,
+    nengo.Node,
+    nengo.Network,
+])
 def test_can_query_objects_from_model(nengo_type):
     with nengo.Network() as model:
         create_dummy(nengo_type, label="label")
@@ -27,7 +31,11 @@ def test_can_query_objects_from_model(nengo_type):
     })
 
 
-@pytest.mark.parametrize('nengo_type', [nengo.Ensemble, nengo.Node])
+@pytest.mark.parametrize('nengo_type', [
+    nengo.Ensemble,
+    nengo.Node,
+    nengo.Network,
+])
 def test_can_query_object_ids(nengo_type):
     with nengo.Network() as model:
         create_dummy(nengo_type, label="label")
