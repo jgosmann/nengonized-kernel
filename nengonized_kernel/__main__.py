@@ -27,19 +27,21 @@ async def start_server(handler):
         sys.stdout.flush()
         while True:
             await asyncio.sleep(1)
+            sys.stdout.flush()
+            sys.stderr.flush()
 
 
 # FIXME check argument number
 with open(sys.argv[1], 'r') as f:
     model = None
+    id_provider = None
     errors = None
     try:
         model, locals_dict = ModelLoader().from_string(f.read())
+        id_provider = IdProvider(model, locals_dict)
     except ExecutionError as err:
         errors = [err]
-    context = Context(
-            model=model, errors=errors,
-            id_provider=IdProvider(model, locals_dict))
+    context = Context(model=model, errors=errors, id_provider=id_provider)
     handler = Handler(context)
 
     asyncio.get_event_loop().run_until_complete(start_server(handler))

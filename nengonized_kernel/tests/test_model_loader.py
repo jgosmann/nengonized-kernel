@@ -10,9 +10,10 @@ from nengonized_kernel.testing import dummy_model
 
 class TestModelLoader(object):
     def test_loads_model_from_string(self):
-        model = ModelLoader().from_string(dummy_model)
+        model, locals_dict = ModelLoader().from_string(dummy_model)
         assert isinstance(model, nengo.Network)
         assert model.label == 'dummy'
+        assert locals_dict['model'] is model
 
     def test_does_not_change_working_directory(self):
         code = "import os; os.chdir('..')\n" + dummy_model
@@ -33,7 +34,7 @@ class TestModelLoader(object):
             ModelLoader().from_string("")
 
     def test_sets_name(self):
-        model = ModelLoader('name').from_string("""
+        model, locals_dict = ModelLoader('name').from_string("""
 import nengo
 model = nengo.Network(label=__name__)
 """)
