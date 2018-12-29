@@ -1,4 +1,5 @@
 import asyncio
+import base64
 import json
 import os.path
 from subprocess import Popen, PIPE
@@ -6,6 +7,9 @@ import sys
 
 import pytest
 import websockets
+
+
+pytestmark = pytest.mark.asyncio
 
 
 VALID_MODEL_FILE = os.path.join(
@@ -58,21 +62,37 @@ class Kernel(object):
             self.proc.kill()
 
 
-@pytest.mark.asyncio
 async def test_run_kernel_and_query_valid_model():
     async with Kernel(VALID_MODEL_FILE) as kernel:
         async with websockets.connect(kernel.address) as ws:
-            await ws.send('{ model { ensembles { label } } }')
+            await ws.send(json.dumps({
+                'query': '{ model { ensembles { label } } }'}))
             result = await ws.recv()
     assert json.loads(result) == {
             'model': {'ensembles': [{'label': "Ensemble"}]}}
 
 
-@pytest.mark.asyncio
 async def test_run_kernel_and_query_invalid_model():
     async with Kernel(INVALID_MODEL_FILE) as kernel:
         async with websockets.connect(kernel.address) as ws:
-            await ws.send('{ errors { message } }')
+            await ws.send(json.dumps({
+                'query': '{ errors { message } }'}))
             result = await ws.recv()
-    print(result)
     assert json.loads(result) == {'errors': [{'message': "An error"}]}
+
+
+async def test_run_kernel_and_query_node_with_variable():
+    ens_id = base64.encodebytes(b'NengoEnsemble:no:Ensemble:ens')
+    async with Kernel(VALID_MODEL_FILE) as kernel:
+        async with websockets.connect(kernel.address) as ws:
+            await ws.send(json.dumps({
+                'query': '''query Query($id: ID!) {
+                    node(id: $id) {
+                        ... on NengoEnsemble { label } 
+                    }
+                }''',
+                'variables': {'id': ens_id.decode()}
+            }))
+            result = await ws.recv()
+    assert json.loads(result) == {'node': {'label': "Ensemble"}}
+

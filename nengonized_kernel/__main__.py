@@ -14,8 +14,11 @@ class Handler(object):
 
     async def __call__(self, ws, path):
         while True:
-            query = await ws.recv()
-            result = schema.execute(query, context=context)
+            query_data = json.loads(await ws.recv())
+            query = query_data['query']
+            variables = query_data.get('variables', None)
+            result = schema.execute(
+                    query, context=context, variables=variables)
             await ws.send(json.dumps(result.data))
 
 
